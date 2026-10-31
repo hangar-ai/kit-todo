@@ -1,0 +1,10 @@
+{
+  "description": "Lists the TODO, FIXME, HACK and XXX comments of the project, grouped by file or by tag, and hands any of them to an agent in one click.",
+  "topics": [
+    "hangar-kit",
+    "hangar",
+    "claude-code",
+    "tasks",
+    "code"
+  ]
+}
