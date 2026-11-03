@@ -1,6 +1,6 @@
-//! The manifest's `native` field, ported from `test/manifest.test.js`: the
-//! file exists, is a `.wasm`, lies inside the kit, and is a module Hangar
-//! loads (WebAssembly that imports nothing but `hangar.log` and `hangar.now`).
+//! The manifest, for a tab that is native: schema 2, the `entry` is a `.wasm`
+//! file that exists and lies inside the kit, and is a module Hangar loads
+//! (WebAssembly that imports nothing but `hangar.log` and `hangar.now`).
 
 use std::path::{Component, Path, PathBuf};
 
@@ -20,14 +20,14 @@ fn tab() -> Value {
 }
 
 #[test]
-fn the_manifest_stays_schema_1_with_its_page_and_adds_the_module() {
+fn the_manifest_is_schema_2_and_the_entry_is_the_module() {
     let manifest = manifest();
-    assert_eq!(manifest["schema"], 1);
-    assert_eq!(manifest["hangar"], ">=1.9.0");
+    assert_eq!(manifest["schema"], 2);
+    assert_eq!(manifest["hangar"], ">=2.0.0");
     let tab = tab();
-    assert_eq!(tab["entry"], "tabs/todo/index.html");
-    assert!(kit().join("tabs/todo/index.html").is_file());
-    assert_eq!(tab["native"], "tabs/todo.wasm");
+    assert_eq!(tab["entry"], "tabs/todo.wasm");
+    assert!(tab.get("native").is_none(), "schema 2 has no `native` field");
+    assert!(!kit().join("tabs/todo").exists(), "no HTML page is left");
 }
 
 #[test]
@@ -53,9 +53,9 @@ fn the_permissions_are_those_of_the_page() {
 }
 
 #[test]
-fn native_names_a_wasm_file_inside_the_kit() {
+fn the_entry_names_a_wasm_file_inside_the_kit() {
     let tab = tab();
-    let native = Path::new(tab["native"].as_str().unwrap());
+    let native = Path::new(tab["entry"].as_str().unwrap());
     assert_eq!(native.extension().and_then(|e| e.to_str()), Some("wasm"));
     // Relative, inside the kit, nothing hidden.
     assert!(native.is_relative());
@@ -78,7 +78,7 @@ fn native_names_a_wasm_file_inside_the_kit() {
 #[test]
 fn the_module_is_webassembly_for_hangar_and_not_for_wasi_or_wasm_bindgen() {
     let tab = tab();
-    let bytes = std::fs::read(kit().join(tab["native"].as_str().unwrap())).unwrap();
+    let bytes = std::fs::read(kit().join(tab["entry"].as_str().unwrap())).unwrap();
     assert_eq!(&bytes[..4], b"\0asm");
     let has = |needle: &str| bytes.windows(needle.len()).any(|w| w == needle.as_bytes());
     for export in [
@@ -102,10 +102,10 @@ fn the_module_is_webassembly_for_hangar_and_not_for_wasi_or_wasm_bindgen() {
 fn nothing_personal_is_left_in_the_module() {
     // The build remaps the paths of the machine it ran on.
     let tab = tab();
-    let bytes = std::fs::read(kit().join(tab["native"].as_str().unwrap())).unwrap();
+    let bytes = std::fs::read(kit().join(tab["entry"].as_str().unwrap())).unwrap();
     let text = String::from_utf8_lossy(&bytes);
     // Written in pieces, so that this file does not hold them itself (a test
-    // of the page's scripts looks for them in every file of the kit).
+    // looks for them in every file of the kit).
     let forbidden = [
         format!("/{}/", "home"),
         format!("/{}/", "Users"),
