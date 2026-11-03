@@ -1,5 +1,5 @@
-//! The cases of `test/tab.test.js` that are about `logic.js` alone, and the
-//! lines of logic the port wrote anew (the stored copy, the collation).
+//! The tab's logic alone, over plain data: the brief, the stored copy, the
+//! collation.
 
 use serde_json::{Value, json};
 

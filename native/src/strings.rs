@@ -1,5 +1,5 @@
-//! Every word of the tab, in English and in French (`STRINGS` of
-//! `tabs/todo/logic.js`). A count picks `key_one` or `key_other`.
+//! Every word of the tab, in English and in French. A count picks `key_one`
+//! or `key_other`.
 
 use hangar_kit_sdk::i18n::Strings;
 

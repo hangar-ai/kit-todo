@@ -1,6 +1,6 @@
 //! Shared by the tests: a pretend Hangar answering the tab's calls as
-//! `test/helpers.js`'s fake `window.hangar` does (an in-memory data folder,
-//! panes, the scan command, the permissions the tab holds), the documents the
+//! Hangar does (an in-memory data folder, panes, the scan command, the
+//! permissions the tab holds), the documents the
 //! scan script prints, and a few ways to read the page.
 #![allow(dead_code)]
 

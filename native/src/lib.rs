@@ -1,12 +1,12 @@
 //! The TODO tab, native: the `TODO`, `FIXME`, `HACK` and `XXX` comments of the
 //! workspace, grouped by file or by tag, handed to an agent in one click.
 //!
-//! This is `tabs/todo/{logic,controller,view,app}.js` in Rust, built to
-//! WebAssembly (`scripts/build-native.sh` puts it at `tabs/todo.wasm`, which
-//! the manifest's `native` names). The page stays for Hangar 1.x.
+//! It is Rust built to WebAssembly (`scripts/build-native.sh` puts it at
+//! `tabs/todo.wasm`, which the manifest's `entry` names), and Hangar 2.0 draws
+//! it with its own widgets.
 //!
 //! - **State**: [`Todo`], changed by [`Message`]s in `update`, drawn by `view`.
-//! - **Host calls**, as the page makes them: `tab.setTitle`, `tab.setBadge`,
+//! - **Host calls**: `tab.setTitle`, `tab.setBadge`,
 //!   `data.read` and `data.write` of `last.json`, `panes.list`,
 //!   `command.run` of the declared `scan` (everything, then one file for its
 //!   authors), `preview.show`, `panes.send`.

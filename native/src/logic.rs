@@ -1,4 +1,4 @@
-//! The tab's pure logic, ported from `tabs/todo/logic.js`: the scan script's
+//! The tab's pure logic: the scan script's
 //! document, checked and turned into what the page shows, and the brief an
 //! agent is handed. No SDK widgets and no Hangar: the tests call it directly.
 

@@ -1,6 +1,5 @@
-//! The cases of `test/tab.test.js`, the controller's and the view's, run on
-//! the native tab through the harness, and the ones the port adds (the stored
-//! scan read back, the scan too large to store, the events).
+//! The native tab, run through the SDK's harness: its calls, its states, the
+//! stored scan read back, the scan too large to store, the events.
 
 mod common;
 

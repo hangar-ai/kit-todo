@@ -1,6 +1,6 @@
 #!/bin/sh
 # Builds the native tab (native/, Rust) to WebAssembly and puts the module
-# where hangar-kit.json's `native` says: tabs/todo.wasm. Hangar runs the .wasm
+# where hangar-kit.json's `entry` says: tabs/todo.wasm. Hangar runs the .wasm
 # a kit ships and never builds one, so the module is committed with the source
 # that made it: run this in the commit that changes native/.
 #
