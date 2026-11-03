@@ -61,22 +61,84 @@ it lists that file's markers with their `author` and `at` (when) from `git blame
 - Preview cannot open a hidden file or folder (`.github/…`): those rows have no **Ouvrir**.
 - A marker on several lines of comment is listed by its first line.
 
+## The native tab
+
+On a native Hangar (2.x, which draws kit tabs itself) the tab is **Rust compiled to WebAssembly**:
+`native/` is the crate, `tabs/todo.wasm` the module the manifest's `native` names, and Hangar draws
+its page with its own widgets, in your theme, with no browser engine. It does what the page does,
+with the same host calls and the same six permissions: the scan, the last scan in the kit's data
+folder, the tag filters, the search, the grouping, **Qui l'a écrit**, **Ouvrir**, **Confier à un
+agent**, the badge. The page in `tabs/todo/` stays: Hangar 1.x ignores `native` and opens it, and a
+native Hangar opens it only when the module cannot be loaded (the tab's bar says so).
+
+What the native tab adds, beyond the page:
+
+- **The last scan is read back.** The page wrote `last.json` without the `schema` its own reader
+  requires, so the stored scan never came back when the tab opened; the native tab writes the
+  document it reads (and the skill's: `schema`, `at`, `total`, `counts`, `truncated`, `incomplete`,
+  `items`).
+- **A scan too large to store is said so.** With 1 000 long paths and comments the document can pass
+  the 1 MB `data.write` takes. The tab then shows the whole scan, stores the first markers that fit
+  (`truncated`, with the complete totals) and says how many were kept; a refused write is said too.
+- **An answer about an old scan is let go**: a send that finishes after a new scan does not mark
+  another marker as sent.
+- **An opening refused by `preview.show` says so**, rather than naming `panes.send`.
+
+What the page did and the native tab cannot (docs/native/kits-native.md in Hangar's repository):
+
+- **Select text with the pointer.** A comment or a path cannot be selected in a native tab; copy it
+  from the file (**Ouvrir**).
+- **Accessibility roles and labels** (`role=alert`, `aria-label`, the heading levels): the native
+  toolkit has no accessibility tree yet; the **Ouvrir** buttons carry the file and line as a tooltip.
+- **A client-side timeout.** The page's `kit.js` gave up on a call after 30 s (130 s for a command);
+  natively only the scan's own limit, 60 s, ends a scan (`timeoutSeconds` of the manifest).
+
+The times follow Hangar's formats in both: "Scanned 5 min ago", then "today at 9:13 PM".
+
+### Building it
+
+`rustup target add wasm32-unknown-unknown` once, then:
+
+```sh
+scripts/build-native.sh        # native/ -> tabs/todo.wasm (release, wasm32-unknown-unknown)
+cargo test --manifest-path native/Cargo.toml
+scripts/check-native.sh        # the committed module is built from the committed sources
+```
+
+Hangar runs the `.wasm` a kit ships and never builds one, so `tabs/todo.wasm` is committed, in the
+commit that changes `native/`. The build puts a hash of `native/Cargo.toml`, `Cargo.lock` and `src/`
+in the module, and `check-native.sh` (no Rust needed, run by CI first) fails when it is not the
+hash of the sources next to it. The SDK is `hangar-kit-sdk` from the `feat/native-rust` branch of
+<https://github.com/hangar-ai/hangar>, pinned by `native/Cargo.lock` until a release tag holds it.
+The paths of the machine that built it are replaced in the module, so it holds nothing personal.
+
+To try it: link this folder in Settings → Kits of a native Hangar, open the tab, and after each
+build reload the tab from its bar; or `cargo run -p hangar-kit-host --example preview --
+tabs/todo.wasm` in Hangar's repository, a pretend Hangar that does not run commands (the tab then
+shows its failed-scan state).
+
 ## Tests and fixtures
 
 `node --test kits/todo/`. They run the script on a fixture tree built on the fly (comments in a dozen
 languages, ignored folders, a `.gitignore` with negations, a binary file, strings and prose that must
-not match, a real git repository for the author), and the tab against a fake `window.hangar`.
+not match, a real git repository for the author), and the page's tab against a fake `window.hangar`.
+
+`cargo test --manifest-path native/Cargo.toml` runs the native tab's: the cases of the page's tests,
+on the same documents, through the SDK's test harness (the same runtime the module runs, on the
+host, answered by a pretend Hangar), and the manifest's `native` field.
 
 ## Get it
 
 Link `kits/todo` from Hangar, or clone
 <https://github.com/hangar-ai/kit-todo>. Needs Hangar 1.9.0 or later and Node.js
-on the PATH (and git, for the authors).
+on the PATH (and git, for the authors). The native tab needs nothing more: the module is in the clone.
 
 ## This repository
 
-`node --test` runs the tests, with Node alone. These tests need nothing from Hangar's repository.
+`node --test` runs the tests of the scan script and of the page, with Node alone; `cargo test` (in
+`native/`) the native tab's. These tests need nothing from Hangar's repository.
 
-CI calls [kit-check](https://github.com/hangar-ai/.github/blob/main/.github/workflows/kit-check.yml). A release is
-a tag, `v` and the manifest's version, and it reaches Hangar's gallery once
+CI calls [kit-check](https://github.com/hangar-ai/.github/blob/main/.github/workflows/kit-check.yml),
+and checks the native tab: the committed module is the sources', the tests pass, the module builds.
+A release is a tag, `v` and the manifest's version, and it reaches Hangar's gallery once
 [the catalog](https://github.com/hangar-ai/catalog) is updated and reviewed.
