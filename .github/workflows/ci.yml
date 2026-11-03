@@ -12,3 +12,39 @@ permissions:
 jobs:
   kit-check:
     uses: hangar-ai/.github/.github/workflows/kit-check.yml@v1
+
+  # The native tab (native/, Rust built to WebAssembly). Hangar runs the .wasm a kit ships and
+  # never builds one, so the module is committed: this job fails when it is not the sources'.
+  native:
+    name: Native tab
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: The committed module is built from the committed sources
+        run: scripts/check-native.sh
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            native/target
+          key: native-${{ hashFiles('native/Cargo.lock') }}
+      - name: Tests
+        run: cargo test --manifest-path native/Cargo.toml --locked
+      - name: The module builds
+        run: scripts/build-native.sh
+      - name: A module built here against the committed one
+        # The bytes follow the compiler's version, so a difference is told, not failed: what fails
+        # is a module that is not the sources' (the step above) and a source that does not build.
+        run: |
+          if git diff --quiet -- tabs/todo.wasm; then
+            echo "tabs/todo.wasm is byte for byte what this toolchain builds"
+          else
+            echo "::notice::tabs/todo.wasm differs from what this toolchain builds ($(rustc --version)); the committed one was built from the same sources"
+          fi
