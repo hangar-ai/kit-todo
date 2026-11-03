@@ -11,7 +11,7 @@ const read = (...parts) => fs.readFileSync(path.join(KIT, ...parts), "utf8");
 
 function allFiles(dir = KIT, found = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    if ([".git", ".hangar-ui", "node_modules"].includes(entry.name)) continue;
+    if ([".git", ".hangar-ui", "node_modules", "target"].includes(entry.name)) continue;
     if (entry.isDirectory()) allFiles(path.join(dir, entry.name), found);
     else found.push(path.join(dir, entry.name));
   }

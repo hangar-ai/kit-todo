@@ -27,6 +27,7 @@
       "id": "todo",
       "title": "TODO",
       "entry": "tabs/todo/index.html",
+      "native": "tabs/todo.wasm",
       "icon": "icon.svg",
       "permissions": ["command:scan", "panes.read", "panes.send", "preview.show", "data.read", "data.write"]
     }
