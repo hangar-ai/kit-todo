@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   kit-check:
-    uses: hangar-ai/.github/.github/workflows/kit-check.yml@v1
+    uses: hangar-ai/.github/.github/workflows/kit-check.yml@rust-rewrite
 
   # The native tab (native/, Rust built to WebAssembly). Hangar runs the .wasm a kit ships and
   # never builds one, so the module is committed: this job fails when it is not the sources'.
