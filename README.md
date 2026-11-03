@@ -5,7 +5,8 @@ comments, and hands any of it to an agent in one click.
 
 ## What it does
 
-**A tab**, « TODO ». It scans the workspace when it opens (and when you press **Analyser**) and lists:
+**A tab**, « TODO », native: Rust compiled to WebAssembly, drawn by Hangar 2.0 or later with its
+own widgets, in your theme. It scans the workspace when it opens (and when you press **Analyser**) and lists:
 
 - the **markers**, grouped **by file** or **by tag**, with a filter chip per tag (with its count) and
   a search over the comment and the file name;
@@ -63,20 +64,16 @@ it lists that file's markers with their `author` and `at` (when) from `git blame
 
 ## The native tab
 
-On a native Hangar (2.x, which draws kit tabs itself) the tab is **Rust compiled to WebAssembly**:
-`native/` is the crate, `tabs/todo.wasm` the module the manifest's `native` names, and Hangar draws
-its page with its own widgets, in your theme, with no browser engine. It does what the page does,
-with the same host calls and the same six permissions: the scan, the last scan in the kit's data
-folder, the tag filters, the search, the grouping, **Qui l'a écrit**, **Ouvrir**, **Confier à un
-agent**, the badge. The page in `tabs/todo/` stays: Hangar 1.x ignores `native` and opens it, and a
-native Hangar opens it only when the module cannot be loaded (the tab's bar says so).
+The tab is **Rust compiled to WebAssembly**: `native/` is the crate, `tabs/todo.wasm` the module the
+manifest's `entry` names (the manifest is schema 2, `"hangar": ">=2.0.0"`), and Hangar draws its page
+with its own widgets, in your theme, with no browser engine. There is no HTML page. It holds the
+six permissions listed above, and does the scan, keeps the last scan in the kit's data folder, filters
+by tag, searches, groups, and offers **Qui l'a écrit**, **Ouvrir**, **Confier à un agent** and the
+badge through them.
 
-What the native tab adds, beyond the page:
-
-- **The last scan is read back.** The page wrote `last.json` without the `schema` its own reader
-  requires, so the stored scan never came back when the tab opened; the native tab writes the
-  document it reads (and the skill's: `schema`, `at`, `total`, `counts`, `truncated`, `incomplete`,
-  `items`).
+- **The last scan is read back.** The tab writes the document it reads (and the skill's: `schema`,
+  `at`, `total`, `counts`, `truncated`, `incomplete`, `items`), so the stored scan comes back when the
+  tab opens.
 - **A scan too large to store is said so.** With 1 000 long paths and comments the document can pass
   the 1 MB `data.write` takes. The tab then shows the whole scan, stores the first markers that fit
   (`truncated`, with the complete totals) and says how many were kept; a refused write is said too.
@@ -84,16 +81,16 @@ What the native tab adds, beyond the page:
   another marker as sent.
 - **An opening refused by `preview.show` says so**, rather than naming `panes.send`.
 
-What the page did and the native tab cannot (docs/native/kits-native.md in Hangar's repository):
+What a native tab cannot do (docs/native/kits-native.md in Hangar's repository):
 
-- **Select text with the pointer.** A comment or a path cannot be selected in a native tab; copy it
-  from the file (**Ouvrir**).
+- **Select text with the pointer.** A comment or a path cannot be selected; copy it from the file
+  (**Ouvrir**).
 - **Accessibility roles and labels** (`role=alert`, `aria-label`, the heading levels): the native
   toolkit has no accessibility tree yet; the **Ouvrir** buttons carry the file and line as a tooltip.
-- **A client-side timeout.** The page's `kit.js` gave up on a call after 30 s (130 s for a command);
-  natively only the scan's own limit, 60 s, ends a scan (`timeoutSeconds` of the manifest).
+- **A client-side timeout.** Only the scan's own limit, 60 s, ends a scan (`timeoutSeconds` of the
+  manifest).
 
-The times follow Hangar's formats in both: "Scanned 5 min ago", then "today at 9:13 PM".
+The times follow Hangar's formats: "Scanned 5 min ago", then "today at 9:13 PM".
 
 ### Building it
 
@@ -121,24 +118,25 @@ shows its failed-scan state).
 
 `node --test kits/todo/`. They run the script on a fixture tree built on the fly (comments in a dozen
 languages, ignored folders, a `.gitignore` with negations, a binary file, strings and prose that must
-not match, a real git repository for the author), and the page's tab against a fake `window.hangar`.
+not match, a real git repository for the author), and read the manifest and the kit's files.
 
-`cargo test --manifest-path native/Cargo.toml` runs the native tab's: the cases of the page's tests,
-on the same documents, through the SDK's test harness (the same runtime the module runs, on the
-host, answered by a pretend Hangar), and the manifest's `native` field.
+`cargo test --manifest-path native/Cargo.toml` runs the native tab's: its states and calls through
+the SDK's test harness (the same runtime the module runs, on the host, answered by a pretend Hangar),
+and the manifest's schema 2 `entry`.
 
 ## Get it
 
 Link `kits/todo` from Hangar, or clone
-<https://github.com/hangar-ai/kit-todo>. Needs Hangar 1.9.0 or later and Node.js
-on the PATH (and git, for the authors). The native tab needs nothing more: the module is in the clone.
+<https://github.com/hangar-ai/kit-todo>. Needs Hangar 2.0.0 or later (an older one says the kit
+needs a newer Hangar) and Node.js on the PATH (and git, for the authors). The native tab needs
+nothing more: the module is in the clone.
 
 ## This repository
 
-`node --test` runs the tests of the scan script and of the page, with Node alone; `cargo test` (in
-`native/`) the native tab's. These tests need nothing from Hangar's repository.
+`node --test` runs the tests of the scan script and of the manifest, with Node alone; `cargo test`
+(in `native/`) the native tab's. These tests need nothing from Hangar's repository.
 
-CI calls [kit-check](https://github.com/hangar-ai/.github/blob/main/.github/workflows/kit-check.yml),
+CI calls [kit-check](https://github.com/hangar-ai/.github/blob/rust-rewrite/.github/workflows/kit-check.yml),
 and checks the native tab: the committed module is the sources', the tests pass, the module builds.
 A release is a tag, `v` and the manifest's version, and it reaches Hangar's gallery once
 [the catalog](https://github.com/hangar-ai/catalog) is updated and reviewed.
