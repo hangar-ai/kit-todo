@@ -2,7 +2,7 @@
   "schema": 2,
   "id": "todo",
   "name": "TODO",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Lists the TODO, FIXME, HACK and XXX comments of the project, grouped by file or by tag, and hands any of them to an agent in one click.",
   "author": "Hangar",
   "homepage": "https://github.com/hangar-ai/kit-todo",
